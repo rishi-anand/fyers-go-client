@@ -3,9 +3,6 @@ github.com/gorilla/websocket
 # github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40
 ## explicit
 github.com/lunixbochs/struc
-# github.com/rishi-anand/fyers-api-models v0.0.2-0.20211021065402-cf03ab344558
-## explicit
-github.com/rishi-anand/fyers-api-models
 # github.com/sacOO7/go-logger v0.0.0-20180719173527-9ac9add5a50d
 github.com/sacOO7/go-logger
 # github.com/sacOO7/gowebsocket v0.0.0-20210515122958-9396f1a71e23

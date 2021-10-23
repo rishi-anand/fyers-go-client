@@ -1,4 +1,4 @@
-package main
+package fyers
 
 import (
 	"encoding/json"
@@ -11,15 +11,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Client struct {
+type client struct {
 	apiKey      string
 	accessToken string
 	debug       bool
 	httpClient  *http.Client
 }
 
-func New(apiKey, accessToken string) *Client {
-	return &Client{
+func New(apiKey, accessToken string) *client {
+	return &client{
 		apiKey:      apiKey,
 		accessToken: accessToken,
 		debug:       false,
@@ -33,17 +33,17 @@ func New(apiKey, accessToken string) *Client {
 	}
 }
 
-func (c *Client) WithHttpClient(httpClient *http.Client) *Client {
+func (c *client) WithHttpClient(httpClient *http.Client) *client {
 	c.httpClient = httpClient
 	return c
 }
 
-func (c *Client) EnableDebug() *Client {
+func (c *client) EnableDebug() *client {
 	c.debug = true
 	return c
 }
 
-func (c *Client) invoke(method, url string, body interface{}) ([]byte, error) {
+func (c *client) invoke(method, url string, body interface{}) ([]byte, error) {
 	headerMap := map[string]string{
 		"Authorization": fmt.Sprintf("%s:%s", c.apiKey, c.accessToken),
 		"Content-Type":  "application/json",

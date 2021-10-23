@@ -1,4 +1,4 @@
-package websocket
+package fyerswatch
 
 import (
 	"bytes"
@@ -244,7 +244,7 @@ func (w *watchNotifier) setFyersTokenForSymbols(symbols []string) error {
 				return nil
 			}
 		} else {
-			return fmt.Errorf("Failed to get quote for symbols %v. %v", symbols, utils.GetJsonValueAtPath(respByte, "errmsg"))
+			return fmt.Errorf("failed to get quote for symbols %v. %v", symbols, utils.GetJsonValueAtPath(respByte, "errmsg"))
 		}
 	}
 }
