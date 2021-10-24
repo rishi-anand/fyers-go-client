@@ -1,9 +1,16 @@
 package fyers
 
 const (
-	Host             = "https://api.fyers.in"
-	SingleOrderUrl   = Host + "/api/v2/orders"
-	MultiOrderUrl    = Host + "/api/v2/orders-multi"
-	PositionOrderUrl = Host + "/api/v2/positions"
-	QuoteUrl         = Host + "/data-rest/v2/quotes/?symbols=%s"
+	Host          = "https://api.fyers.in"
+	ApiV2         = "/api/v2"
+	OrdersUrl     = Host + ApiV2 + "/orders"
+	MultiOrderUrl = Host + ApiV2 + "/orders-multi"
+	PositionsUrl  = Host + ApiV2 + "/positions"
+	QuoteUrl      = Host + "/data-rest/v2/quotes/?symbols=%s"
+	ProfileUrl    = Host + ApiV2 + "/profile"
+	FundsUrl      = Host + ApiV2 + "/funds"
+	HoldingsUrl   = Host + ApiV2 + "/holdings"
+	TradeBookUrl  = Host + ApiV2 + "/tradebook"
+
+	IdQueryParam = "?id=%s"
 )

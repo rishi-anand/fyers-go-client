@@ -182,16 +182,6 @@ type OrderDataResponse struct {
 	StatusDescription string        `json:"statusDescription,omitempty" yaml:"statusDescription,omitempty"`
 }
 
-type OrderBookResponse struct {
-	Status  string `json:"s,omitempty" yaml:"s,omitempty"`
-	Code    int    `json:"code,omitempty" code:"symbol,omitempty"`
-	Message string `json:"message,omitempty" yaml:"message,omitempty"`
-
-	IsFailed bool `json:"isFailed,omitempty" yaml:"isFailed,omitempty"` //custom
-
-	OrderBook []OrderBook `json:"orderBook,omitempty" yaml:"orderBook,omitempty"`
-}
-
 type OrderBook struct {
 	Id             string  `json:"id,omitempty" yaml:"id,omitempty"`
 	OrderTime      string  `json:"orderDateTime,omitempty" yaml:"orderDateTime,omitempty"`
@@ -214,6 +204,7 @@ type OrderBook struct {
 	ExSymbol       string  `json:"ex_sym,omitempty" yaml:"ex_sym,omitempty"`
 	OrderNumStatus string  `json:"orderNumStatus,omitempty" yaml:"orderNumStatus,omitempty"`
 	Description    string  `json:"description,omitempty" yaml:"description,omitempty"`
+	FyToken        string  `json:"fyToken,omitempty" yaml:"fyToken,omitempty"`
 }
 
 func (f OrderBook) GetStatus() OrderStatus {
