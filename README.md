@@ -7,9 +7,12 @@ Fyers api golang client will help user to connect with various apis and subscrib
 ## Features
 
 - Place real time single and multiple orders
+- Modify pending order, cancel order, exit positions
 - Get quotes of single of multiple symbols
+- Get user profile, funds, holdings
+- List orders, positions, trades
 - Stream live data from market via fyers go client
-- More to be added soon.. 😊
+- Get Historical data, market depth
 
 ## Installation
 
