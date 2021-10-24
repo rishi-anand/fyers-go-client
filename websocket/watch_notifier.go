@@ -107,7 +107,7 @@ func (w *watchNotifier) Subscribe(nt api.NotificationType, symbols ...string) {
 
 func (w *watchNotifier) onConnected(socket gowebsocket.Socket, symbols []string) {
 	log.Println("Connected to server")
-	socket.SendBinary([]byte(`{"T": "SUB_L2", "L2LIST": [` + strings.Join(symbols, ",") + `], "SUB_T": 1}`))
+	socket.SendBinary([]byte(`{"T": "SUB_L2", "L2LIST": [` + strings.Join(utils.FormatStrArrWithQuotes(symbols), ",") + `], "SUB_T": 1}`))
 	if w.onConnect != nil {
 		w.onConnect()
 	}
