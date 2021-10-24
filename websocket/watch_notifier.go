@@ -196,7 +196,7 @@ func (w *watchNotifier) OnBinaryMessage(nt api.NotificationType, data []byte, so
 			n.SymbolData.TotalBuyQty = int64(extraMsg.TotBuy)
 			n.SymbolData.TotalSellQty = int64(extraMsg.TotSell)
 
-			depth := make([]api.MarketDepth, 0, 1)
+			depth := make([]api.MarketBid, 0, 1)
 			//market depth to be run 10 times
 			msg := data[fyPLenHeader:][fyPLenComnPayload:][fyPLenExtra7208:]
 			for i := 0; i < 10; i++ {
@@ -207,7 +207,7 @@ func (w *watchNotifier) OnBinaryMessage(nt api.NotificationType, data []byte, so
 					fmt.Println(err)
 					return
 				}
-				depth = append(depth, api.MarketDepth{Price: float32(bidAsk.Price), Qty: int64(bidAsk.Qty), NumOfOrders: int64(bidAsk.NumOrd)})
+				depth = append(depth, api.MarketBid{Price: float32(bidAsk.Price), Qty: int64(bidAsk.Qty), NumOfOrders: int64(bidAsk.NumOrd)})
 			}
 			n.SymbolData.MarketPic = depth
 		}

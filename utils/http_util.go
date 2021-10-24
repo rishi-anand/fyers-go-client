@@ -10,8 +10,10 @@ import (
 )
 
 const (
-	GET  = "GET"
-	POST = "POST"
+	GET    = "GET"
+	POST   = "POST"
+	PUT    = "PUT"
+	DELETE = "DELETE"
 )
 
 func DoHttpCall(method, url string, body []byte, headers map[string]string) ([]byte, error) {

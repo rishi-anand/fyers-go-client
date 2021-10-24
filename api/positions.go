@@ -38,3 +38,11 @@ type PositionMeta struct {
 	RealizedPl   float64 `json:"pl_realized,omitempty" yaml:"pl_realized,omitempty"`
 	UnrealizedPl float64 `json:"pl_unrealized,omitempty" yaml:"pl_unrealized,omitempty"`
 }
+
+type ConvertPosition struct {
+	Symbol      string `json:"symbol,omitempty" yaml:"symbol,omitempty"`
+	Side        int    `json:"positionSide,omitempty" yaml:"positionSide,omitempty"`
+	ConvertQty  int    `json:"convertQty,omitempty" yaml:"convertQty,omitempty"`
+	ConvertFrom string `json:"convertFrom,omitempty" yaml:"convertFrom,omitempty"`
+	ConvertTo   string `json:"convertTo,omitempty" yaml:"convertTo,omitempty"`
+}
