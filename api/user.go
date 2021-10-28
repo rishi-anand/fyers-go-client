@@ -1,5 +1,6 @@
 package api
 
+// UserProfile is the response api model for get profile
 type UserProfile struct {
 	Name          string `json:"name,omitempty" yaml:"name,omitempty"`
 	Image         string `json:"image,omitempty" yaml:"image,omitempty"`
@@ -11,10 +12,12 @@ type UserProfile struct {
 	PwdToExpire   int32  `json:"pwd_to_expire,omitempty" yaml:"pwd_to_expire,omitempty"`
 }
 
+// UserFund is the response api model for get funds with various funds and limits
 type UserFund struct {
 	FundLimit []Fund `json:"fund_limit,omitempty" yaml:"fund_limit,omitempty"`
 }
 
+// Fund is the information about a fund
 type Fund struct {
 	Id              int     `json:"id,omitempty" yaml:"id,omitempty"`
 	Title           string  `json:"title,omitempty" yaml:"title,omitempty"`
@@ -22,11 +25,13 @@ type Fund struct {
 	CommodityAmount float64 `json:"commodityAmount,omitempty" yaml:"commodityAmount,omitempty"`
 }
 
+// UserHoldings is the response api model for get holdings
 type UserHoldings struct {
 	Holdings    []Holding   `json:"holdings,omitempty" yaml:"holdings,omitempty"`
 	HoldingMeta HoldingMeta `json:"overall,omitempty" yaml:"overall,omitempty"`
 }
 
+// Holding is the information about a holding
 type Holding struct {
 	Type         string  `json:"holdingType,omitempty" yaml:"holdingType,omitempty"`
 	Symbol       string  `json:"symbol,omitempty" yaml:"symbol,omitempty"`
@@ -41,6 +46,7 @@ type Holding struct {
 	Exchange     int     `json:"exchange,omitempty" yaml:"exchange,omitempty"`
 }
 
+// HoldingMeta is cumulative metadata of holdings
 type HoldingMeta struct {
 	TotalCount        int     `json:"count_total,omitempty" yaml:"count_total,omitempty"`
 	TotalInvestment   float64 `json:"total_investment,omitempty" yaml:"total_investment,omitempty"`

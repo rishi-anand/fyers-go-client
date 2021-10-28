@@ -18,6 +18,11 @@ github.com/tidwall/gjson
 github.com/tidwall/match
 # github.com/tidwall/pretty v1.2.0
 github.com/tidwall/pretty
-# golang.org/x/sys v0.0.0-20191026070338-33540a1f6037
+# golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
+## explicit
+# golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
+# golang.org/x/tools v0.1.7
+## explicit

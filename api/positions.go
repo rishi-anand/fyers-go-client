@@ -1,10 +1,12 @@
 package api
 
+// UserPosition is the response api model to get active positions of user
 type UserPosition struct {
 	NetPositions []Position   `json:"netPositions,omitempty" yaml:"netPositions,omitempty"`
 	PositionMeta PositionMeta `json:"overall,omitempty" yaml:"overall,omitempty"`
 }
 
+// Position is the response api model which captures more information about each position
 type Position struct {
 	Symbol           string    `json:"symbol,omitempty" yaml:"symbol,omitempty"`
 	Id               string    `json:"id,omitempty" yaml:"id,omitempty"`

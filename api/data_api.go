@@ -6,6 +6,7 @@ import (
 	"github.com/rishi-anand/fyers-go-client/utils"
 )
 
+// DataQuote is the response api model for quotes
 type DataQuote struct {
 	Symbol             string  `json:"symbol,omitempty" yaml:"symbol,omitempty"`
 	ShortName          string  `json:"short_name,omitempty" yaml:"short_name,omitempty"`
@@ -34,11 +35,13 @@ func (d *DataQuote) IstTimestamp() time.Time {
 	return time.Time{}
 }
 
+// HistoricalData is the response api model for historical data with candles model
 type HistoricalData struct {
 	Status  string      `json:"s,omitempty" yaml:"s,omitempty"`
 	Candles [][]float64 `json:"candles,omitempty" yaml:"candles,omitempty"`
 }
 
+// MarketDepth is the response api model for data api for market depth api
 type MarketDepth struct {
 	TotalBuyQty     int             `json:"totalbuyqty,omitempty" yaml:"totalbuyqty,omitempty"`
 	TotalSellQty    int             `json:"totalsellqty,omitempty" yaml:"totalsellqty,omitempty"`
@@ -60,6 +63,7 @@ type MarketDepth struct {
 	Expiry          string          `json:"expiry,omitempty" yaml:"expiry,omitempty"`
 }
 
+// MarketDataBid denotes each bid and ask
 type MarketDataBid struct {
 	Price  float32 `json:"price,omitempty" yaml:"price,omitempty"`
 	Volume int64   `json:"volume,omitempty" yaml:"volume,omitempty"`
