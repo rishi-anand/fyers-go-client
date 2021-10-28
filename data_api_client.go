@@ -11,7 +11,7 @@ import (
 )
 
 func (c *client) GetQuote(symbols []string) ([]api.DataQuote, error) {
-	if resp, err := c.invoke(utils.GET, fmt.Sprintf(QuoteUrl, strings.Join(symbols, ",")), nil); err != nil {
+	if resp, err := c.invoke(utils.GET, c.toUri(DataV2, QuoteUrl, QueryParam, SymbolsQueryParam, strings.Join(symbols, ",")), nil); err != nil {
 		return nil, err
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -34,7 +34,7 @@ type DomainHistoricalData struct {
 
 //GetHistoricalData gives us candles of past data based on given time frame.
 func (c *client) GetHistoricalData(symbol string, resolution api.Resolution, startDate, endDate time.Time) (api.HistoricalData, error) {
-	queryParam := fmt.Sprintf("?symbol=%s&date_format=%d&resolution=%s&cont_flag=1", symbol, 0, resolution)
+	queryParam := fmt.Sprintf("symbol=%s&date_format=%d&resolution=%s&cont_flag=1", symbol, 0, resolution)
 	if !startDate.IsZero() {
 		queryParam = fmt.Sprintf("%s&range_from=%d", queryParam, startDate.Unix())
 	} else {
@@ -46,7 +46,7 @@ func (c *client) GetHistoricalData(symbol string, resolution api.Resolution, sta
 		queryParam = fmt.Sprintf("%s&range_to=2021-01-02", queryParam)
 	}
 
-	if resp, err := c.invoke(utils.GET, HistoricalDataApiUrl+queryParam, nil); err != nil {
+	if resp, err := c.invoke(utils.GET, c.toUri(DataV2, HistoricalDataApiUrl, QueryParam, queryParam), nil); err != nil {
 		return api.HistoricalData{}, err
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -76,7 +76,7 @@ func (c *client) GetHistoricalData(symbol string, resolution api.Resolution, sta
 }
 
 func (c *client) GetMarketDepth(symbol string) (map[string]api.MarketDepth, error) {
-	if resp, err := c.invoke(utils.GET, fmt.Sprintf(MarketDepthApiUrl, symbol), nil); err != nil {
+	if resp, err := c.invoke(utils.GET, c.toUri(DataV2, MarketDepthApiUrl, QueryParam, SymbolQueryParam, symbol, AndQueryParam, OhlcvQueryParam), nil); err != nil {
 		return nil, err
 	} else {
 		if utils.IsSuccessResponse(resp) {

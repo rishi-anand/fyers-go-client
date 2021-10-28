@@ -9,7 +9,7 @@ import (
 )
 
 func (c *client) PlaceOrder(order api.Order) api.OrderResponse {
-	if resp, err := c.invoke(utils.POST, OrdersUrl, order); err != nil {
+	if resp, err := c.invoke(utils.POST, c.toUri(ApiV2, OrdersUrl), order); err != nil {
 		return api.OrderResponse{IsFailed: true, Message: err.Error()}
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -25,7 +25,7 @@ func (c *client) PlaceOrder(order api.Order) api.OrderResponse {
 }
 
 func (c *client) PlaceOrders(orders []api.Order) api.MultiOrderResponse {
-	if resp, err := c.invoke(utils.POST, MultiOrderUrl, orders); err != nil {
+	if resp, err := c.invoke(utils.POST, c.toUri(ApiV2, MultiOrderUrl), orders); err != nil {
 		return api.MultiOrderResponse{IsFailed: true, Message: err.Error()}
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -41,7 +41,7 @@ func (c *client) PlaceOrders(orders []api.Order) api.MultiOrderResponse {
 }
 
 func (c *client) ListOrders() ([]api.OrderBook, error) {
-	if resp, err := c.invoke(utils.GET, OrdersUrl, nil); err != nil {
+	if resp, err := c.invoke(utils.GET, c.toUri(ApiV2, OrdersUrl), nil); err != nil {
 		return nil, err
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -58,7 +58,7 @@ func (c *client) ListOrders() ([]api.OrderBook, error) {
 }
 
 func (c *client) GetOrder(orderId string) (api.OrderBook, error) {
-	if resp, err := c.invoke(utils.GET, OrdersUrl+fmt.Sprintf(IdQueryParam, orderId), nil); err != nil {
+	if resp, err := c.invoke(utils.GET, c.toUri(ApiV2, OrdersUrl, QueryParam, IdQueryParam, orderId), nil); err != nil {
 		return api.OrderBook{}, err
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -75,7 +75,7 @@ func (c *client) GetOrder(orderId string) (api.OrderBook, error) {
 }
 
 func (c *client) ModifyOrder(order api.OrderUpdate) api.OrderResponse {
-	if resp, err := c.invoke(utils.PUT, OrdersUrl, order); err != nil {
+	if resp, err := c.invoke(utils.PUT, c.toUri(ApiV2, OrdersUrl), order); err != nil {
 		return api.OrderResponse{IsFailed: true, Message: err.Error()}
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -91,7 +91,7 @@ func (c *client) ModifyOrder(order api.OrderUpdate) api.OrderResponse {
 }
 
 func (c *client) CancelOrder(orderId string) api.OrderResponse {
-	if resp, err := c.invoke(utils.DELETE, OrdersUrl, api.NewOrderId(orderId)); err != nil {
+	if resp, err := c.invoke(utils.DELETE, c.toUri(ApiV2, OrdersUrl), api.NewOrderId(orderId)); err != nil {
 		return api.OrderResponse{IsFailed: true, Message: err.Error()}
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -107,7 +107,7 @@ func (c *client) CancelOrder(orderId string) api.OrderResponse {
 }
 
 func (c *client) ExitPosition(positionId string) api.OrderResponse {
-	if resp, err := c.invoke(utils.DELETE, PositionsUrl, api.NewOrderId(positionId)); err != nil {
+	if resp, err := c.invoke(utils.DELETE, c.toUri(ApiV2, PositionsUrl), api.NewOrderId(positionId)); err != nil {
 		return api.OrderResponse{IsFailed: true, Message: err.Error()}
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -127,7 +127,7 @@ func (c *client) ExitPositions(positions []string) api.OrderResponse {
 	for _, pId := range positions {
 		positionsReq = append(positionsReq, api.NewOrderId(pId))
 	}
-	if resp, err := c.invoke(utils.DELETE, PositionsUrl, positionsReq); err != nil {
+	if resp, err := c.invoke(utils.DELETE, c.toUri(ApiV2, PositionsUrl), positionsReq); err != nil {
 		return api.OrderResponse{IsFailed: true, Message: err.Error()}
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -143,7 +143,7 @@ func (c *client) ExitPositions(positions []string) api.OrderResponse {
 }
 
 func (c *client) ExitAllPositions() api.OrderResponse {
-	if resp, err := c.invoke(utils.DELETE, PositionsUrl, "{}"); err != nil {
+	if resp, err := c.invoke(utils.DELETE, c.toUri(ApiV2, PositionsUrl), "{}"); err != nil {
 		return api.OrderResponse{IsFailed: true, Message: err.Error()}
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -159,7 +159,7 @@ func (c *client) ExitAllPositions() api.OrderResponse {
 }
 
 func (c *client) ConvertPosition(position api.ConvertPosition) api.OrderResponse {
-	if resp, err := c.invoke(utils.PUT, PositionsUrl, position); err != nil {
+	if resp, err := c.invoke(utils.PUT, c.toUri(ApiV2, PositionsUrl), position); err != nil {
 		return api.OrderResponse{IsFailed: true, Message: err.Error()}
 	} else {
 		if utils.IsSuccessResponse(resp) {

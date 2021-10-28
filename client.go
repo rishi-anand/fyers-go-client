@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/rishi-anand/fyers-go-client/utils"
@@ -12,6 +13,7 @@ import (
 )
 
 type client struct {
+	host        string
 	apiKey      string
 	accessToken string
 	debug       bool
@@ -43,6 +45,11 @@ func (c *client) EnableDebug() *client {
 	return c
 }
 
+func (c *client) WithHost(host string) *client {
+	c.host = host
+	return c
+}
+
 func (c *client) invoke(method, url string, body interface{}) ([]byte, error) {
 	headerMap := map[string]string{
 		"Authorization": fmt.Sprintf("%s:%s", c.apiKey, c.accessToken),
@@ -62,4 +69,12 @@ func (c *client) invoke(method, url string, body interface{}) ([]byte, error) {
 	} else {
 		return resp, nil
 	}
+}
+
+func (c *client) toUri(version, path string, params ...string) string {
+	host := Host
+	if len(c.host) > 0 {
+		host = c.host
+	}
+	return fmt.Sprintf("%s%s%s%s", host, version, path, strings.Join(params, ""))
 }

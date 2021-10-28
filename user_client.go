@@ -9,7 +9,7 @@ import (
 )
 
 func (c *client) GetProfile() (api.UserProfile, error) {
-	if resp, err := c.invoke(utils.GET, ProfileUrl, nil); err != nil {
+	if resp, err := c.invoke(utils.GET, c.toUri(ApiV2, ProfileUrl), nil); err != nil {
 		return api.UserProfile{}, err
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -26,7 +26,7 @@ func (c *client) GetProfile() (api.UserProfile, error) {
 }
 
 func (c *client) GetFund() (api.UserFund, error) {
-	if resp, err := c.invoke(utils.GET, FundsUrl, nil); err != nil {
+	if resp, err := c.invoke(utils.GET, c.toUri(ApiV2, FundsUrl), nil); err != nil {
 		return api.UserFund{}, err
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -43,7 +43,7 @@ func (c *client) GetFund() (api.UserFund, error) {
 }
 
 func (c *client) GetHoldings() (api.UserHoldings, error) {
-	if resp, err := c.invoke(utils.GET, HoldingsUrl, nil); err != nil {
+	if resp, err := c.invoke(utils.GET, c.toUri(ApiV2, HoldingsUrl), nil); err != nil {
 		return api.UserHoldings{}, err
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -60,7 +60,7 @@ func (c *client) GetHoldings() (api.UserHoldings, error) {
 }
 
 func (c *client) GetPositions() (api.UserPosition, error) {
-	if resp, err := c.invoke(utils.GET, PositionsUrl, nil); err != nil {
+	if resp, err := c.invoke(utils.GET, c.toUri(ApiV2, PositionsUrl), nil); err != nil {
 		return api.UserPosition{}, err
 	} else {
 		if utils.IsSuccessResponse(resp) {
@@ -77,7 +77,7 @@ func (c *client) GetPositions() (api.UserPosition, error) {
 }
 
 func (c *client) ListTrades() ([]api.TradeBook, error) {
-	if resp, err := c.invoke(utils.GET, TradeBookUrl, nil); err != nil {
+	if resp, err := c.invoke(utils.GET, c.toUri(ApiV2, TradeBookUrl), nil); err != nil {
 		return nil, err
 	} else {
 		if utils.IsSuccessResponse(resp) {
