@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/rishi-anand/fyers-go-client/api"
 	fyerswatch "github.com/rishi-anand/fyers-go-client/websocket"
@@ -17,6 +18,7 @@ const (
 func main() {
 	printUserProfile()
 	//printQuote()
+	//printHistoricalData()
 	//subscribe()
 
 }
@@ -37,6 +39,31 @@ func printQuote() {
 		fmt.Errorf("failed to get quote from fyers. %v", err)
 	} else {
 		fmt.Println(quotes)
+	}
+}
+
+func printHistoricalData() {
+	/*
+		Start Date and End date are required parameters, if not provided it will be defaulted to [2021-01-01, 2021-01-02] .
+		Libraries like https://github.com/araddon/dateparse may help user to parse
+		date from their desired format to required ones.
+	*/
+	startDate, err := time.Parse(time.RFC3339, "2021-01-12T11:45:26.371Z")
+	if err != nil {
+		fmt.Errorf("failed to parse date %v", err)
+		return
+	}
+
+	endtDate, err := time.Parse(time.RFC3339, "2021-01-15T11:45:26.371Z")
+	if err != nil {
+		fmt.Errorf("failed to parse date %v", err)
+		return
+	}
+	cli := fyers.New(apiKey, accessToken)
+	if data, err := cli.GetHistoricalData("NSE:HDFCBANK-EQ", api.Minute1, startDate, endtDate); err != nil {
+		fmt.Errorf("failed to parse date %v", err)
+	} else {
+		fmt.Println(data)
 	}
 }
 

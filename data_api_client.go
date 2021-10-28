@@ -32,6 +32,7 @@ type DomainHistoricalData struct {
 	Candles [][]float64 `json:"candles,omitempty" yaml:"candles,omitempty"`
 }
 
+//GetHistoricalData gives us candles of past data based on given time frame.
 func (c *client) GetHistoricalData(symbol string, resolution api.Resolution, startDate, endDate time.Time) (api.HistoricalData, error) {
 	queryParam := fmt.Sprintf("?symbol=%s&date_format=%d&resolution=%s&cont_flag=1", symbol, 0, resolution)
 	if !startDate.IsZero() {
