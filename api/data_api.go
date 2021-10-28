@@ -35,10 +35,36 @@ func (d *DataQuote) IstTimestamp() time.Time {
 	return time.Time{}
 }
 
+type Resolution string
+
+const (
+	Minute1   Resolution = "1"
+	Minute2   Resolution = "2"
+	Minute3   Resolution = "3"
+	Minute5   Resolution = "5"
+	Minute10  Resolution = "10"
+	Minute15  Resolution = "15"
+	Minute20  Resolution = "20"
+	Minute30  Resolution = "30"
+	Minute60  Resolution = "60"
+	Minute120 Resolution = "120"
+	Minute240 Resolution = "240"
+	Day       Resolution = "1D"
+)
+
 // HistoricalData is the response api model for historical data with candles model
 type HistoricalData struct {
-	Status  string      `json:"s,omitempty" yaml:"s,omitempty"`
-	Candles [][]float64 `json:"candles,omitempty" yaml:"candles,omitempty"`
+	Symbol  string   `json:"symbol,omitempty" yaml:"symbol,omitempty"`
+	Candles []Candle `json:"candles,omitempty" yaml:"candles,omitempty"`
+}
+
+type Candle struct {
+	Timestamp    time.Time `json:"symbol,omitempty" yaml:"symbol,omitempty"`
+	OpenValue    float32   `json:"openvalue,omitempty" yaml:"openvalue,omitempty"`
+	HighestValue float32   `json:"highestvalue,omitempty" yaml:"highestvalue,omitempty"`
+	LowestValue  float32   `json:"lowestvalue,omitempty" yaml:"lowestvalue,omitempty"`
+	CloseValue   float32   `json:"closevalue,omitempty" yaml:"closevalue,omitempty"`
+	Volume       int64     `json:"volume,omitempty" yaml:"volume,omitempty"`
 }
 
 // MarketDepth is the response api model for data api for market depth api
