@@ -257,7 +257,6 @@ func (w *watchNotifier) deleteFromSubsList(symbols ...string) []string {
 }
 
 func (w *watchNotifier) OnBinaryMessage(socket gowebsocket.Socket, nt api.NotificationType, data []byte) {
-	log.Println("======== Received OnBinaryMessage")
 	n := api.Notification{Type: nt}
 	if nt == api.SymbolDataTick {
 		v := bytes.NewReader(data[0:fyPLenHeader])
