@@ -22,9 +22,11 @@ import (
 )
 
 const (
-	notifierUrl = "wss://api.fyers.in/socket/v2/dataSock?access_token=%s:%s"
-	dataApi     = "https://api.fyers.in/data-rest/v2/quotes/?symbols=%s"
+	notifierUrl      = "wss://api.fyers.in/socket/v2/dataSock?access_token=%s:%s"
+	orderNotifierUrl = "wss://api.fyers.in/socket/v2/orderSock?type=orderUpdate&access_token=%s:%s&user-agent=fyers-api"
+	dataApi          = "https://api.fyers.in/data-rest/v2/quotes/?symbols=%s"
 )
+
 const (
 	fyPLenHeader      = 24
 	fyPLenComnPayload = 48
@@ -96,19 +98,19 @@ func (w *watchNotifier) Disconnect() {
 	}
 }
 
-func (w *watchNotifier) Unsubscribe(nt api.NotificationType, symbols ...string) {
+func (w *watchNotifier) Unsubscribe(symbols ...string) {
 	subsLatch.Lock()
 	defer subsLatch.Unlock()
 	log.Println("Unsubscribing from server")
 	if w.conn.IsConnected {
-		if nt == api.SymbolDataTick {
+		if w.nt == api.SymbolDataTick {
 			if len(symbols) > 0 {
 				unSubsL := w.deleteFromSubsList(symbols...)
 				if len(unSubsL) > 0 {
 					w.conn.SendBinary([]byte(`{"T": "SUB_L2", "L2LIST": [` + strings.Join(utils.FormatStrArrWithQuotes(unSubsL), ",") + `], "SUB_T": 0}`))
 				}
 			}
-		} else if nt == api.OrderUpdateTick {
+		} else if w.nt == api.OrderUpdateTick {
 			w.conn.SendBinary([]byte(`{"T": "SUB_ORD", "SLIST": "orderUpdate", "SUB_T": 0}`))
 		}
 	}
@@ -119,9 +121,14 @@ func (w *watchNotifier) Subscribe(nt api.NotificationType, symbols ...string) {
 	if !w.conn.IsConnected {
 		interrupt := make(chan os.Signal, 1)
 		signal.Notify(interrupt, os.Interrupt)
-
-		w.setFyersTokenForSymbols(symbols)
-		socket := gowebsocket.New(fmt.Sprintf(notifierUrl, w.apiKey, w.accessToken))
+		w.nt = nt
+		var socket gowebsocket.Socket
+		if nt == api.SymbolDataTick {
+			w.setFyersTokenForSymbols(symbols)
+			socket = gowebsocket.New(fmt.Sprintf(notifierUrl, w.apiKey, w.accessToken))
+		} else {
+			socket = gowebsocket.New(fmt.Sprintf(orderNotifierUrl, w.apiKey, w.accessToken))
+		}
 
 		socket.OnConnectError = w.OnConnectError
 		socket.OnTextMessage = w.OnTextMessage
@@ -146,6 +153,11 @@ func (w *watchNotifier) Subscribe(nt api.NotificationType, symbols ...string) {
 			}
 		}
 	} else {
+		if w.nt != nt {
+			log.Errorf("current subscription is for %v notification, but received add subscription for %v notification", w.nt, nt)
+			w.onError(fmt.Errorf("current subscription is for %v notification, but received add subscription for %v notification", w.nt, nt))
+			return
+		}
 		w.onConnected(w.conn, nt, w.addToSubsList(symbols...)...)
 		subsLatch.Unlock()
 	}
@@ -245,6 +257,7 @@ func (w *watchNotifier) deleteFromSubsList(symbols ...string) []string {
 }
 
 func (w *watchNotifier) OnBinaryMessage(socket gowebsocket.Socket, nt api.NotificationType, data []byte) {
+	log.Println("======== Received OnBinaryMessage")
 	n := api.Notification{Type: nt}
 	if nt == api.SymbolDataTick {
 		v := bytes.NewReader(data[0:fyPLenHeader])
