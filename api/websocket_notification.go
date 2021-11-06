@@ -12,6 +12,7 @@ const (
 type Notification struct {
 	Type       NotificationType
 	SymbolData SymbolDataNotification
+	OrderData  OrderNotification
 }
 
 type SymbolDataNotification struct {
@@ -43,4 +44,33 @@ type MarketBid struct {
 	Price       float32 `json:"price,omitempty" yaml:"price,omitempty"`
 	Qty         int64   `json:"qty,omitempty" yaml:"qty,omitempty"`
 	NumOfOrders int64   `json:"num_orders,omitempty" yaml:"num_orders,omitempty"`
+}
+
+type OrderNotification struct {
+	SerialNo       int          `json:"slNo,omitempty" yaml:"slNo,omitempty"`
+	Symbol         string       `json:"symbol,omitempty" yaml:"symbol,omitempty"`
+	Timestamp      time.Time    `json:"orderDateTime,omitempty" yaml:"orderDateTime,omitempty"`
+	Id             string       `json:"id,omitempty" yaml:"id,omitempty"`
+	ExchgOrdId     string       `json:"exchOrdId,omitempty" yaml:"exchOrdId,omitempty"`
+	Side           OrderSide    `json:"side,omitempty" yaml:"side,omitempty"`
+	Segment        string       `json:"segment,omitempty" yaml:"segment,omitempty"`
+	Instrument     string       `json:"instrument,omitempty" yaml:"instrument,omitempty"`
+	ProductType    ProductType  `json:"productType,omitempty" yaml:"productType,omitempty"`
+	OrderStatus    OrderStatus  `json:"status,omitempty" yaml:"status,omitempty"`
+	Quantity       int          `json:"qty,omitempty" yaml:"qty,omitempty"`
+	RemainingQty   int          `json:"remainingQuantity,omitempty" yaml:"remainingQuantity,omitempty"`
+	FilledQty      int          `json:"filledQty,omitempty" yaml:"filledQty,omitempty"`
+	DisclosedQty   int          `json:"discloseQty,omitempty" yaml:"discloseQty,omitempty"`
+	DqQtyRem       int          `json:"dqQtyRem,omitempty" yaml:"dqQtyRem,omitempty"`
+	LimitPrice     float32      `json:"limitPrice,omitempty" yaml:"limitPrice,omitempty"`
+	StopPrice      float32      `json:"stopPrice,omitempty" yaml:"stopPrice,omitempty"`
+	OrderType      OrderType    `json:"type,omitempty" yaml:"type,omitempty"`
+	Validity       ValidityType `json:"orderValidity,omitempty" yaml:"orderValidity,omitempty"`
+	OfflineOrder   bool         `json:"offlineOrder,omitempty" yaml:"offlineOrder,omitempty"`
+	Message        string       `json:"message,omitempty" yaml:"message,omitempty"`
+	OrderNumStatus string       `json:"orderNumStatus,omitempty" yaml:"orderNumStatus,omitempty"`
+	TradedPrice    string       `json:"tradedPrice,omitempty" yaml:"tradedPrice,omitempty"`
+	FyersToken     string       `json:"fyToken,omitempty" yaml:"fyToken,omitempty"`
+
+	IsError bool `json:"fyToken,omitempty" yaml:"fyToken,omitempty"`
 }
