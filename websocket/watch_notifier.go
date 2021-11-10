@@ -39,7 +39,7 @@ const (
 
 var subsLatch sync.Mutex
 
-type watchNotifier struct {
+type WatchNotifier struct {
 	conn gowebsocket.Socket
 	nt   api.NotificationType
 
@@ -62,8 +62,8 @@ type watchNotifier struct {
 	interrupt chan os.Signal
 }
 
-func NewNotifier(apiKey, accessToken string) *watchNotifier {
-	return &watchNotifier{
+func NewNotifier(apiKey, accessToken string) *WatchNotifier {
+	return &WatchNotifier{
 		apiKey:            apiKey,
 		accessToken:       accessToken,
 		tokenMap:          make(map[string]string),
@@ -71,34 +71,39 @@ func NewNotifier(apiKey, accessToken string) *watchNotifier {
 	}
 }
 
-func (w *watchNotifier) WithOnMessageFunc(f func(api.Notification)) *watchNotifier {
+func (w *WatchNotifier) WithOnMessageFunc(f func(api.Notification)) *WatchNotifier {
 	w.onMessage = f
 	return w
 }
 
-func (w *watchNotifier) WithOnConnectFunc(f func()) *watchNotifier {
+func (w *WatchNotifier) WithOnConnectFunc(f func()) *WatchNotifier {
 	w.onConnect = f
 	return w
 }
 
-func (w *watchNotifier) WithOnErrorFunc(f func(err error)) *watchNotifier {
+func (w *WatchNotifier) WithOnErrorFunc(f func(err error)) *WatchNotifier {
 	w.onError = f
 	return w
 }
 
-func (w *watchNotifier) WithOnCloseFunc(f func()) *watchNotifier {
+func (w *WatchNotifier) WithOnCloseFunc(f func()) *WatchNotifier {
 	w.onClose = f
 	return w
 }
 
-func (w *watchNotifier) Disconnect() {
+func (w *WatchNotifier) Disconnect() {
+
 	w.closeConnReq = true
 	if w.conn.IsConnected {
-		w.conn.Close()
+		w.closeConn(w.conn)
 	}
 }
 
-func (w *watchNotifier) Unsubscribe(symbols ...string) {
+func (w *WatchNotifier) IsConnected() bool {
+	return w.conn.IsConnected
+}
+
+func (w *WatchNotifier) Unsubscribe(symbols ...string) {
 	subsLatch.Lock()
 	defer subsLatch.Unlock()
 	log.Println("Unsubscribing from server")
@@ -116,7 +121,7 @@ func (w *watchNotifier) Unsubscribe(symbols ...string) {
 	}
 }
 
-func (w *watchNotifier) Subscribe(nt api.NotificationType, symbols ...string) {
+func (w *WatchNotifier) Subscribe(nt api.NotificationType, symbols ...string) {
 	subsLatch.Lock()
 	if !w.conn.IsConnected {
 		interrupt := make(chan os.Signal, 1)
@@ -163,13 +168,13 @@ func (w *watchNotifier) Subscribe(nt api.NotificationType, symbols ...string) {
 	}
 }
 
-func (w *watchNotifier) reconnect() {
+func (w *WatchNotifier) reconnect() {
 	if !w.closeConnReq {
 		w.conn.Connect()
 	}
 }
 
-func (w *watchNotifier) onConnected(socket gowebsocket.Socket, nt api.NotificationType, symbols ...string) {
+func (w *WatchNotifier) onConnected(socket gowebsocket.Socket, nt api.NotificationType, symbols ...string) {
 	log.Println("Connected to server")
 	if nt == api.SymbolDataTick {
 		if len(symbols) > 0 {
@@ -183,7 +188,7 @@ func (w *watchNotifier) onConnected(socket gowebsocket.Socket, nt api.Notificati
 	}
 }
 
-func (w *watchNotifier) OnConnectError(err error, socket gowebsocket.Socket) {
+func (w *WatchNotifier) OnConnectError(err error, socket gowebsocket.Socket) {
 	socket.Close()
 	w.failedAttempt++
 	if w.failedAttempt < maxAttempt {
@@ -199,7 +204,7 @@ type WsTextMsg struct {
 	Status  string `json:"s,omitempty" yaml:"s,omitempty"`
 }
 
-func (w *watchNotifier) OnTextMessage(msg string, socket gowebsocket.Socket) {
+func (w *WatchNotifier) OnTextMessage(msg string, socket gowebsocket.Socket) {
 	var e WsTextMsg
 	log.Println(msg)
 	_ = json.Unmarshal([]byte(msg), &e)
@@ -207,8 +212,7 @@ func (w *watchNotifier) OnTextMessage(msg string, socket gowebsocket.Socket) {
 		if e.Code == -1600 {
 			if socket.IsConnected {
 				w.closeConnReq = true
-				socket.Close()
-				w.interrupt <- os.Interrupt
+				w.closeConn(socket)
 			}
 		}
 
@@ -218,15 +222,20 @@ func (w *watchNotifier) OnTextMessage(msg string, socket gowebsocket.Socket) {
 	}
 }
 
-func (w *watchNotifier) OnPingReceived(data string, socket gowebsocket.Socket) {
+func (w *WatchNotifier) closeConn(socket gowebsocket.Socket) {
+	socket.Close()
+	w.interrupt <- os.Interrupt
+}
+
+func (w *WatchNotifier) OnPingReceived(data string, socket gowebsocket.Socket) {
 	log.Debugln("Recieved ping " + data)
 }
 
-func (w *watchNotifier) OnPongReceived(data string, socket gowebsocket.Socket) {
+func (w *WatchNotifier) OnPongReceived(data string, socket gowebsocket.Socket) {
 	log.Debugln("Recieved pong " + data)
 }
 
-func (w *watchNotifier) OnDisconnected(err error, socket gowebsocket.Socket) {
+func (w *WatchNotifier) OnDisconnected(err error, socket gowebsocket.Socket) {
 	if !w.closeConnReq {
 		w.reconnect()
 	} else {
@@ -234,7 +243,7 @@ func (w *watchNotifier) OnDisconnected(err error, socket gowebsocket.Socket) {
 	}
 }
 
-func (w *watchNotifier) addToSubsList(symbols ...string) []string {
+func (w *WatchNotifier) addToSubsList(symbols ...string) []string {
 	newSubsL := make([]string, 0, 1)
 	for _, ss := range symbols {
 		if _, ok := w.subscribedSymbols[ss]; !ok {
@@ -245,7 +254,7 @@ func (w *watchNotifier) addToSubsList(symbols ...string) []string {
 	return newSubsL
 }
 
-func (w *watchNotifier) deleteFromSubsList(symbols ...string) []string {
+func (w *WatchNotifier) deleteFromSubsList(symbols ...string) []string {
 	unSubsL := make([]string, 0, 1)
 	for _, ss := range symbols {
 		if _, ok := w.subscribedSymbols[ss]; ok {
@@ -256,7 +265,7 @@ func (w *watchNotifier) deleteFromSubsList(symbols ...string) []string {
 	return unSubsL
 }
 
-func (w *watchNotifier) OnBinaryMessage(socket gowebsocket.Socket, nt api.NotificationType, data []byte) {
+func (w *WatchNotifier) OnBinaryMessage(socket gowebsocket.Socket, nt api.NotificationType, data []byte) {
 	n := api.Notification{Type: nt}
 	if nt == api.SymbolDataTick {
 		v := bytes.NewReader(data[0:fyPLenHeader])
@@ -307,14 +316,16 @@ func (w *watchNotifier) OnBinaryMessage(socket gowebsocket.Socket, nt api.Notifi
 			depth := make([]api.MarketBid, 0, 1)
 			//market depth to be run 10 times
 			msg := data[fyPLenHeader:][fyPLenComnPayload:][fyPLenExtra7208:]
+			s := 0
 			for i := 0; i < 10; i++ {
-				z := bytes.NewReader(msg[:fyPLenBidAsk])
+				z := bytes.NewReader(msg[s : s+fyPLenBidAsk])
 				bidAsk := &PacketMsgMarketDepth{}
 				if err := struc.Unpack(z, bidAsk); err != nil {
 					w.notifyError(err)
 					return
 				}
 				depth = append(depth, api.MarketBid{Price: float32(bidAsk.Price), Qty: int64(bidAsk.Qty), NumOfOrders: int64(bidAsk.NumOrd)})
+				s += 12
 			}
 			n.SymbolData.MarketPic = depth
 		}
@@ -342,7 +353,7 @@ func (w *watchNotifier) OnBinaryMessage(socket gowebsocket.Socket, nt api.Notifi
 	}
 }
 
-func (w *watchNotifier) notifyError(err error) {
+func (w *WatchNotifier) notifyError(err error) {
 	if w.onError != nil {
 		w.onError(err)
 	}
@@ -354,7 +365,7 @@ var fyCodeMap = map[int]bool{
 	27:   true,
 }
 
-func (w *watchNotifier) setFyersTokenForSymbols(symbols []string) error {
+func (w *WatchNotifier) setFyersTokenForSymbols(symbols []string) error {
 	headerMap := map[string]string{
 		"Authorization": fmt.Sprintf("%s:%s", w.apiKey, w.accessToken),
 		"Content-Type":  "application/json",
