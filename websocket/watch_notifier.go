@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -106,7 +107,7 @@ func (w *WatchNotifier) IsConnected() bool {
 func (w *WatchNotifier) Unsubscribe(symbols ...string) {
 	subsLatch.Lock()
 	defer subsLatch.Unlock()
-	log.Println("Unsubscribing from server")
+	log.Infof("Unsubscribing from server")
 	if w.conn.IsConnected {
 		if w.nt == api.SymbolDataTick {
 			if len(symbols) > 0 {
@@ -175,7 +176,7 @@ func (w *WatchNotifier) reconnect() {
 }
 
 func (w *WatchNotifier) onConnected(socket gowebsocket.Socket, nt api.NotificationType, symbols ...string) {
-	log.Println("Connected to server")
+	log.Infof("Connected to server")
 	if nt == api.SymbolDataTick {
 		if len(symbols) > 0 {
 			socket.SendBinary([]byte(`{"T": "SUB_L2", "L2LIST": [` + strings.Join(utils.FormatStrArrWithQuotes(symbols), ",") + `], "SUB_T": 1}`))
@@ -204,10 +205,131 @@ type WsTextMsg struct {
 	Status  string `json:"s,omitempty" yaml:"s,omitempty"`
 }
 
+func float64ToString(f float64) string {
+	return strconv.FormatFloat(f, 'f', -1, 64)
+}
+
+func intToTimeStamp(t int) time.Time {
+	return time.Unix(int64(t/1000), 0)
+}
+
 func (w *WatchNotifier) OnTextMessage(msg string, socket gowebsocket.Socket) {
 	var e WsTextMsg
-	log.Println(msg)
+	log.Debugf("Received message: %s", msg)
 	_ = json.Unmarshal([]byte(msg), &e)
+	if e.Message == "" { // Parsing failed, not a simple text msg, could be an order update
+		n := api.Notification{Type: api.OrderUpdateTick}
+		data := []byte(msg)
+		if utils.IsSuccessResponse(data) {
+			var orderUpdate map[string]interface{}
+			notificationData := []byte(utils.GetJsonValueAtPath(data, "d"))
+			if err := json.Unmarshal(notificationData, &orderUpdate); err == nil { // Unmarshal on OrderNotification isn't working because of the timestamp format
+
+				var orderSide api.OrderSide
+				switch orderUpdate["side"].(float64) {
+				case float64(api.BuyOrder):
+					orderSide = api.BuyOrder
+				case float64(api.SellOrder):
+					orderSide = api.SellOrder
+				}
+
+				var productType api.ProductType
+				switch orderUpdate["productType"].(string) {
+				case string(api.CNCOrder):
+					productType = api.CNCOrder
+				case string(api.IntradayOrder):
+					productType = api.IntradayOrder
+				case string(api.MarginOrder):
+					productType = api.MarginOrder
+				case string(api.CoverOrder):
+					productType = api.CoverOrder
+				case string(api.BracketOrder):
+					productType = api.BracketOrder
+				}
+
+				var orderStatus api.OrderStatus
+				switch orderUpdate["status"].(float64) {
+				case float64(api.Cancelled):
+					orderStatus = api.Cancelled
+				case float64(api.Traded):
+					orderStatus = api.Traded
+				case float64(api.ForFutureUse):
+					orderStatus = api.ForFutureUse
+				case float64(api.Transit):
+					orderStatus = api.Transit
+				case float64(api.Rejected):
+					orderStatus = api.Rejected
+				case float64(api.Pending):
+					orderStatus = api.Pending
+				case float64(api.Expired):
+					orderStatus = api.Cancelled
+				}
+
+				var orderType api.OrderType
+				switch orderUpdate["type"].(float64) {
+				case float64(api.LimitOrder):
+					orderType = api.LimitOrder
+				case float64(api.MarketOrder):
+					orderType = api.MarketOrder
+				case float64(api.StopLossOrder):
+					orderType = api.StopLossOrder
+				case float64(api.StopLimitOrder):
+					orderType = api.StopLimitOrder
+				}
+
+				var validity api.ValidityType
+				switch orderUpdate["orderValidity"].(string) {
+				case string(api.ImmediateOrCancelValidity):
+					validity = api.ImmediateOrCancelValidity
+				case string(api.EndOfDayValidity):
+					validity = api.EndOfDayValidity
+				}
+
+				locTZ, _ := time.LoadLocation("Local")
+				n.OrderData = api.OrderNotification{
+					SerialNo:       int(orderUpdate["slNo"].(float64)),
+					Symbol:         orderUpdate["symbol"].(string),
+					Timestamp:      intToTimeStamp(int(orderUpdate["orderDateTime"].(float64) * 1000)).In(locTZ),
+					Id:             orderUpdate["id"].(string),
+					ExchgOrdId:     orderUpdate["exchOrdId"].(string),
+					Side:           orderSide,
+					Segment:        orderUpdate["segment"].(string),
+					Instrument:     orderUpdate["instrument"].(string),
+					ProductType:    productType,
+					OrderStatus:    orderStatus,
+					Quantity:       int(orderUpdate["qty"].(float64)),
+					RemainingQty:   int(orderUpdate["remainingQuantity"].(float64)),
+					FilledQty:      int(orderUpdate["filledQty"].(float64)),
+					DisclosedQty:   int(orderUpdate["discloseQty"].(float64)),
+					DqQtyRem:       int(orderUpdate["dqQtyRem"].(float64)),
+					LimitPrice:     float32(orderUpdate["limitPrice"].(float64)),
+					StopPrice:      float32(orderUpdate["stopPrice"].(float64)),
+					OrderType:      orderType,
+					Validity:       validity,
+					OfflineOrder:   orderUpdate["offlineOrder"].(bool),
+					Message:        orderUpdate["message"].(string),
+					OrderNumStatus: orderUpdate["orderNumStatus"].(string),
+					TradedPrice:    float64ToString(orderUpdate["tradedPrice"].(float64)),
+					FyersToken:     orderUpdate["fyToken"].(string),
+				}
+			} else {
+				n.OrderData = api.OrderNotification{
+					IsError: true,
+					Message: utils.GetJsonValueAtPath(data, err.Error()),
+				}
+			}
+		} else {
+			n.OrderData = api.OrderNotification{
+				IsError: true,
+				Message: utils.GetJsonValueAtPath(data, "msg"),
+			}
+		}
+
+		if w.onMessage != nil {
+			w.onMessage(n)
+		}
+	}
+
 	if e.Status == "error" {
 		if e.Code == -1600 {
 			if socket.IsConnected {
@@ -239,7 +361,7 @@ func (w *WatchNotifier) OnDisconnected(err error, socket gowebsocket.Socket) {
 	if !w.closeConnReq {
 		w.reconnect()
 	} else {
-		log.Println("Disconnected from server ")
+		log.Info("Disconnected from server")
 	}
 }
 
